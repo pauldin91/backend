@@ -1,5 +1,10 @@
 DB_URL=postgresql://backend:backend@localhost:5433/backend?sslmode=disable
 
+push: 
+	git add .
+	git commit -m "$(message)"
+	git push -u origin develop
+
 network:
 	docker network create bank-network
 
@@ -22,7 +27,7 @@ migratedown:
 	migrate -path db/migrations -database "$(DB_URL)" -verbose down
 
 migratedown1:
-	migrate -path db/migrations -database "$(DB_URL)" -verbose force 2 down 1
+	migrate -path db/migrations -database "$(DB_URL)" -verbose down $(times)  
 
 new_migration:
 	migrate create -ext sql -dir db/migrations -seq $(name)
@@ -41,6 +46,9 @@ test:
 
 server:
 	go run main.go
+
+build: 
+	go build -o main 
 
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/techschool/simplebank/db/sqlc Store
