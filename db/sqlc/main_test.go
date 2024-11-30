@@ -3,9 +3,10 @@ package db
 import (
 	"context"
 	"log"
+	"os"
 	"testing"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var testQueries *Queries
@@ -15,13 +16,19 @@ const (
 	dbSource = "postgres://backend:backend@localhost:5433/backend?sslmode=disable"
 )
 
+var testStore Store
+
 func TestMain(m *testing.M) {
-	ctx := context.Background()
-	conn, err := pgx.Connect(ctx, dbSource)
+	//config, err := util.LoadConfig("../..")
+	//if err != nil {
+	//	log.Fatal("cannot load config:", err)
+	//}
+
+	connPool, err := pgxpool.New(context.Background(), dbSource)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("cannot connect to db:", err)
 	}
-	defer conn.Close(ctx)
-	testQueries = New(conn)
-	m.Run()
+
+	testStore = NewStore(connPool)
+	os.Exit(m.Run())
 }
