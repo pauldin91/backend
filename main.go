@@ -3,20 +3,19 @@ package main
 import (
 	"backend/api"
 	db "backend/db/sqlc"
+	"backend/utils"
 	"context"
 	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const (
-	serverAddress = "0.0.0.0:7080"
-	dbDriver      = "postgres"
-	dbSource      = "postgres://backend:backend@localhost:5433/backend?sslmode=disable"
-)
-
 func main() {
-	conn, err := pgxpool.New(context.Background(), dbSource)
+	cfg, err := utils.LoadConfig(".")
+	if err != nil {
+		log.Fatal(err)
+	}
+	conn, err := pgxpool.New(context.Background(), cfg.DBSource)
 	if err != nil {
 		log.Fatal("Cannot connect to db:", err)
 	}
@@ -24,7 +23,7 @@ func main() {
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
 
-	err = server.Start(serverAddress)
+	err = server.Start(cfg.HTTPServerAddress)
 
 	if err != nil {
 		log.Fatal("Could not start server")

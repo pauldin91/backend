@@ -10,8 +10,8 @@ import (
 )
 
 type createAccountRequest struct {
-	Owner    string `json:"owner" binding:"required,owner"`
-	Currency string `json:"currency" binding:"required,currency"`
+	Owner    string `json:"owner" binding:"required"`
+	Currency string `json:"currency" binding:"required,oneof=EUR CAD USD"`
 }
 
 func (server *Server) createAccount(ctx *gin.Context) {
@@ -89,13 +89,12 @@ func (server *Server) listAccounts(ctx *gin.Context) {
 	}
 
 	//authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-	arg := db.ListAccountsParams{
-		Owner:  req.Owner,
+	arg := db.AllAccountsParams{
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
 
-	accounts, err := server.store.ListAccounts(ctx, arg)
+	accounts, err := server.store.AllAccounts(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
