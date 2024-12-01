@@ -6,12 +6,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	USD = "USD"
-	EUR = "EUR"
-	CAD = "CAD"
-)
-
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 const (

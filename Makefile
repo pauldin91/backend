@@ -18,16 +18,15 @@ dropdb:
 	docker exec -it src-postgres-1 dropdb --username=backend backend
 
 migrateup:
-	migrate -path db/migrations -database "$(DB_URL)" -verbose up
-
-migrateup1:
-	migrate -path db/migrations -database "$(DB_URL)" -verbose up 1
+	migrate -path db/migrations -database "$(DB_URL)" -verbose up $(times)
 
 migratedown:
-	migrate -path db/migrations -database "$(DB_URL)" -verbose down
-
-migratedown1:
 	migrate -path db/migrations -database "$(DB_URL)" -verbose down $(times)  
+
+
+migrateversion:
+	migrate -path db/migrations -database "$(DB_URL)" version
+
 
 new_migration:
 	migrate create -ext sql -dir db/migrations -seq $(name)
@@ -38,7 +37,7 @@ db_docs:
 db_schema:
 	dbml2sql --postgres -o doc/schema.sql doc/db.dbml
 
-sqlc:
+gen:
 	sqlc generate
 
 test:
