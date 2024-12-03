@@ -1,4 +1,4 @@
-DB_URL=postgresql://backend:backend@localhost:5433/backend?sslmode=disable
+DB_URL=postgresql://postgres:postgres@localhost:5433/postgres?sslmode=disable
 
 push: 
 	git add .

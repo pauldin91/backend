@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5433:5432"  # Expose PostgreSQL on port 5433 externally
+    volumes:
+      - postgres-data:/var/lib/postgresql/data  # Use a named volume to persist data
+    networks:
+      - backend  # Attach to the backend network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"  # Expose backend service on port 8080
+    networks:
+      - backend  # Attach to the backend network
+    environment:
+      - DB_SOURCE=postgresql://postgres:postgres@postgres:5432/postgres?sslmode=disable  # Connect to PostgreSQL on the internal Docker network
+    depends_on:
+      - postgres  # Ensure backend starts after postgres
+
+networks:
+  backend:
+    driver: bridge  # Use the bridge driver for communication between the services
+
+volumes:
+  postgres-data:  # Define a named volume for persistent PostgreSQL data
