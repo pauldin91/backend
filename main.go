@@ -1,9 +1,9 @@
 package main
 
 import (
-	"backend/api"
-	db "backend/db/sqlc"
-	"backend/utils"
+	"github.com/pauldin91/backend/api"
+	db "github.com/pauldin91/backend/db/sqlc"
+	"github.com/pauldin91/backend/utils"
 	"context"
 	"log"
 

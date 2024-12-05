@@ -1,9 +1,9 @@
 package api
 
 import (
-	db "backend/db/sqlc"
-	"backend/token"
-	"backend/utils"
+	db "github.com/pauldin91/backend/db/sqlc"
+	"github.com/pauldin91/backend/token"
+	"github.com/pauldin91/backend/utils"
 	"fmt"
 
 	"github.com/gin-gonic/gin"

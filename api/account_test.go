@@ -1,10 +1,6 @@
 package api
 
 import (
-	mockdb "backend/db/mock"
-	db "backend/db/sqlc"
-	"backend/token"
-	"backend/utils"
 	"bytes"
 	"database/sql"
 	"encoding/json"
@@ -14,6 +10,11 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	mockdb "github.com/pauldin91/backend/db/mock"
+	db "github.com/pauldin91/backend/db/sqlc"
+	"github.com/pauldin91/backend/token"
+	"github.com/pauldin91/backend/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"

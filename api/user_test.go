@@ -1,9 +1,9 @@
 package api
 
 import (
-	mockdb "backend/db/mock"
-	db "backend/db/sqlc"
-	"backend/utils"
+	mockdb "github.com/pauldin91/backend/db/mock"
+	db "github.com/pauldin91/backend/db/sqlc"
+	"github.com/pauldin91/backend/utils"
 	"bytes"
 	"database/sql"
 	"encoding/json"

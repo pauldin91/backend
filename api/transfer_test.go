@@ -1,10 +1,10 @@
 package api
 
 import (
-	mockdb "backend/db/mock"
-	db "backend/db/sqlc"
-	"backend/token"
-	"backend/utils"
+	mockdb "github.com/pauldin91/backend/db/mock"
+	db "github.com/pauldin91/backend/db/sqlc"
+	"github.com/pauldin91/backend/token"
+	"github.com/pauldin91/backend/utils"
 	"database/sql"
 	"net/http"
 	"net/http/httptest"

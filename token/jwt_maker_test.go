@@ -1,7 +1,7 @@
 package token
 
 import (
-	"backend/utils"
+	"github.com/pauldin91/backend/utils"
 	"testing"
 	"time"
 

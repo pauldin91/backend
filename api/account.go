@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	db "backend/db/sqlc"
-	"backend/token"
+	db "github.com/pauldin91/backend/db/sqlc"
+	"github.com/pauldin91/backend/token"
 
 	"github.com/gin-gonic/gin"
 )

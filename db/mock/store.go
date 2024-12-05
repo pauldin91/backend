@@ -10,7 +10,7 @@
 package mockdb
 
 import (
-	db "backend/db/sqlc"
+	db "github.com/pauldin91/backend/db/sqlc"
 	context "context"
 	reflect "reflect"
 

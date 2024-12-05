@@ -1,12 +1,13 @@
 package api
 
 import (
-	"backend/token"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/pauldin91/backend/token"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"

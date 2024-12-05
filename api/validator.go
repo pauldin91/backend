@@ -1,7 +1,7 @@
 package api
 
 import (
-	"backend/utils"
+	"github.com/pauldin91/backend/utils"
 
 	"github.com/go-playground/validator/v10"
 )

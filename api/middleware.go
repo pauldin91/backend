@@ -1,7 +1,7 @@
 package api
 
 import (
-	"backend/token"
+	"github.com/pauldin91/backend/token"
 	"errors"
 	"net/http"
 	"strings"

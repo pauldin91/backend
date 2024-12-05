@@ -1,7 +1,7 @@
 package db
 
 import (
-	"backend/utils"
+	"github.com/pauldin91/backend/utils"
 	"context"
 	"testing"
 	"time"

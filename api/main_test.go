@@ -1,11 +1,12 @@
 package api
 
 import (
-	db "backend/db/sqlc"
-	"backend/utils"
 	"os"
 	"testing"
 	"time"
+
+	db "github.com/pauldin91/backend/db/sqlc"
+	"github.com/pauldin91/backend/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
