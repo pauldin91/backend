@@ -4,7 +4,7 @@
 // 	protoc        v3.21.12
 // source: service_simple_bank.proto
 
-package backend
+package pb
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

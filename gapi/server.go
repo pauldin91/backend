@@ -1,21 +1,19 @@
 package gapi
 
 import (
-	db "github.com/pauldin91/backend/db/sqlc"
-	"github.com/pauldin91/backend/token"
-	"github.com/pauldin91/backend/utils"
 	"fmt"
 
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/go-playground/validator/v10"
+	db "github.com/pauldin91/backend/db/sqlc"
+	pb "github.com/pauldin91/backend/pb"
+	"github.com/pauldin91/backend/token"
+	"github.com/pauldin91/backend/utils"
 )
 
 type Server struct {
+	pb.UnimplementedSimpleBankServer
 	config     utils.Config
 	store      db.Store
 	tokenMaker token.Maker
-	router     *gin.Engine
 }
 
 func NewServer(cfg utils.Config, store db.Store) (*Server, error) {
@@ -28,9 +26,6 @@ func NewServer(cfg utils.Config, store db.Store) (*Server, error) {
 		config:     cfg,
 		store:      store,
 		tokenMaker: tokenMaker,
-	}
-	if _, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		//		v.RegisterValidation("currency", validCurrency)
 	}
 
 	return server, nil
