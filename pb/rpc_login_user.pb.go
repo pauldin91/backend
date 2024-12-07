@@ -4,7 +4,7 @@
 // 	protoc        v3.21.12
 // source: rpc_login_user.proto
 
-package pb
+package backend
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

@@ -67,7 +67,7 @@ fproto:
 
 
 evans:
-	evans --host localhost --port 9090 -r repl
+	docker run --name evans -d -p 9090:9090 evans
 
 redis:
 	docker run --name src-redis-1 -p 6379:6379 -d redis:7-alpine

@@ -8,7 +8,7 @@ import (
 	"github.com/pauldin91/backend/api"
 	db "github.com/pauldin91/backend/db/sqlc"
 	"github.com/pauldin91/backend/gapi"
-	"github.com/pauldin91/backend/pb"
+	pb "github.com/pauldin91/backend/pb"
 	"github.com/pauldin91/backend/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
