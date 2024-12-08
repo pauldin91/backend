@@ -3,6 +3,7 @@ package gapi
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/pauldin91/backend/db/sqlc"
@@ -41,6 +42,11 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		arg.HashedPassword = pgtype.Text{
 			String: hashedPassword,
 			Valid:  true,
+		}
+
+		arg.PasswordChangedAt = pgtype.Timestamptz{
+			Time:  time.Now(),
+			Valid: true,
 		}
 	}
 
