@@ -6,7 +6,11 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pauldin91/backend/api"
 	db "github.com/pauldin91/backend/db/sqlc"
 	_ "github.com/pauldin91/backend/doc/statik"
@@ -17,8 +21,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
@@ -30,12 +32,25 @@ func main() {
 	if err != nil {
 		log.Fatal("Cannot connect to db:", err)
 	}
+	runDbMigration(cfg.MigrationURL, cfg.DBSource)
 
 	store := db.NewStore(conn)
 	go runGatewayServer(cfg, store)
 	runGrpcServer(cfg, store)
 	//runGinServer(cfg, store)
 
+}
+
+func runDbMigration(migrationUrl string, dbSource string) {
+	migration, err := migrate.New(migrationUrl, dbSource)
+	if err != nil {
+		log.Fatal("failed to create migrations ", err)
+	}
+
+	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatal("failed to apply migrations ", err)
+	}
+	log.Println("Successfully applied migrations")
 }
 
 func runGrpcServer(cfg utils.Config, store db.Store) {
