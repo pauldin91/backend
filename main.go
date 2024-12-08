@@ -4,14 +4,19 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/pauldin91/backend/api"
 	db "github.com/pauldin91/backend/db/sqlc"
+	_ "github.com/pauldin91/backend/doc/statik"
 	"github.com/pauldin91/backend/gapi"
 	pb "github.com/pauldin91/backend/pb"
 	"github.com/pauldin91/backend/utils"
+	"github.com/rakyll/statik/fs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -27,6 +32,7 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
+	go runGatewayServer(cfg, store)
 	runGrpcServer(cfg, store)
 	//runGinServer(cfg, store)
 
@@ -50,6 +56,57 @@ func runGrpcServer(cfg utils.Config, store db.Store) {
 	log.Printf("start gPRC server at %s", listener.Addr().String())
 
 	err = grpcServer.Serve(listener)
+
+	if err != nil {
+		log.Fatal("cannot start gRPC server")
+	}
+
+}
+
+func runGatewayServer(cfg utils.Config, store db.Store) {
+	server, err := gapi.NewServer(cfg, store)
+	if err != nil {
+		log.Fatal("cannot create server: ", err)
+	}
+	jsonOption := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames: true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	})
+
+	grpcMux := runtime.NewServeMux(jsonOption)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	err = pb.RegisterSimpleBankHandlerServer(ctx, grpcMux, server)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	mux := http.NewServeMux()
+
+	mux.Handle("/", grpcMux)
+
+	statikFS, err := fs.New()
+	if err != nil {
+		log.Fatal("cannot create statik ", err)
+	}
+	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
+
+	mux.Handle("/swagger/", swaggerHandler)
+
+	listener, err := net.Listen("tcp", cfg.HTTPServerAddress)
+	if err != nil {
+		log.Fatal("Could not create listener")
+	}
+
+	log.Printf("start gPRC server at %s", listener.Addr().String())
+
+	err = http.Serve(listener, mux)
 
 	if err != nil {
 		log.Fatal("cannot start gRPC server")
