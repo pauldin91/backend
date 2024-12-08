@@ -33,17 +33,42 @@ func GrpcLogger(ctx context.Context, req interface{},
 	return result, err
 }
 
+type ResponseRecorder struct {
+	http.ResponseWriter
+	StatusCode int
+	Body       []byte
+}
+
+func (rec *ResponseRecorder) WriteHeader(statusCode int) {
+	rec.StatusCode = statusCode
+	rec.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (rec *ResponseRecorder) Write(body []byte) (int, error) {
+	rec.Body = body
+	return rec.ResponseWriter.Write(body)
+}
+
 func HttpLogger(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
 		start := time.Now()
-		handler.ServeHTTP(writer, req)
-		log.
-			Info().
+		rec := &ResponseRecorder{
+			ResponseWriter: writer,
+			StatusCode:     http.StatusOK,
+		}
+
+		handler.ServeHTTP(rec, req)
+		logger := log.Info()
+		if rec.StatusCode != http.StatusOK {
+			logger = log.Error().Bytes("body", rec.Body)
+		}
+
+		logger.
 			Str("protocol", "HTTP").
 			Str("method", req.Method).
 			Str("path", req.RequestURI).
-			Int("status_code", int(req.Response.StatusCode)).
-			Str("status_text", req.Response.Status).
+			Int("status_code", int(rec.StatusCode)).
+			Str("status_text", http.StatusText(rec.StatusCode)).
 			Dur("duration", time.Since(start)).
 			Msg("received gRPC")
 	})
