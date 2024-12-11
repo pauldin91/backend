@@ -1,6 +1,6 @@
 DB_URL=postgresql://postgres:postgres@localhost:5433/postgres?sslmode=disable
 
-push: 
+commit: 
 	git add .
 	git commit -m "$(message)"
 	git push -u origin develop
