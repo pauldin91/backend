@@ -49,7 +49,7 @@ func main() {
 	}
 
 	taskDist := worker.NewRedisTaskDistributor(redisOpt)
-	go runTaskProcessor(redisOpt,store)
+	go runTaskProcessor(redisOpt, store)
 	go runGatewayServer(cfg, store, taskDist)
 	runGrpcServer(cfg, store, taskDist)
 	//runGinServer(cfg, store)
@@ -150,7 +150,7 @@ func runGatewayServer(cfg utils.Config, store db.Store, taskDistributor worker.T
 		log.Fatal().Msg("Could not create listener")
 	}
 
-	log.Printf("start gPRC server at %s", listener.Addr().String())
+	log.Printf("start http server at %s", listener.Addr().String())
 
 	handler := gapi.HttpLogger(mux)
 
