@@ -2,11 +2,12 @@ package worker
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 
 	"github.com/hibiken/asynq"
+	db "github.com/pauldin91/backend/db/sqlc"
+	"github.com/pauldin91/backend/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -47,20 +48,37 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 	if err := json.Unmarshal(task.Payload(), &payload); err != nil {
 		return fmt.Errorf("failed to unmarshal payload: %w", asynq.SkipRetry)
 	}
+
 	user, err := processor.store.GetUser(ctx, payload.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return fmt.Errorf("user doesnt exist: %w", asynq.SkipRetry)
-		}
 		return fmt.Errorf("failed to get user: %w", err)
 	}
-	log.
-		Info().
-		Str("type", task.Type()).
-		Bytes("payload", task.Payload()).
-		Str("email", user.Email).
-	Msg("processed task")
 
+	verifyEmail, err := processor.store.CreateVerifyEmail(ctx, db.CreateVerifyEmailParams{
+		Username:   user.Username,
+		Email:      user.Email,
+		SecretCode: utils.RandomString(32),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create verify email: %w", err)
+	}
+
+	subject := "Welcome to Simple Bank"
+	// TODO: replace this URL with an environment variable that points to a front-end page
+	verifyUrl := fmt.Sprintf("http://localhost:8080/v1/verify_email?email_id=%d&secret_code=%s",
+		verifyEmail.ID, verifyEmail.SecretCode)
+	content := fmt.Sprintf(`Hello %s,<br/>
+	Thank you for registering with us!<br/>
+	Please <a href="%s">click here</a> to verify your email address.<br/>
+	`, user.FullName, verifyUrl)
+	to := []string{user.Email}
+
+	err = processor.mailer.SendEmail(subject, content, to, nil, nil, nil)
+	if err != nil {
+		return fmt.Errorf("failed to send verify email: %w", err)
+	}
+
+	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
+		Str("email", user.Email).Msg("processed task")
 	return nil
-
 }

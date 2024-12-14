@@ -19,6 +19,7 @@ import (
 	db "github.com/pauldin91/backend/db/sqlc"
 	_ "github.com/pauldin91/backend/doc/statik"
 	"github.com/pauldin91/backend/gapi"
+	"github.com/pauldin91/backend/mail"
 	pb "github.com/pauldin91/backend/pb"
 	"github.com/pauldin91/backend/utils"
 	"github.com/pauldin91/backend/worker"
@@ -49,7 +50,7 @@ func main() {
 	}
 
 	taskDist := worker.NewRedisTaskDistributor(redisOpt)
-	go runTaskProcessor(redisOpt, store)
+	go runTaskProcessor(cfg, redisOpt, store)
 	go runGatewayServer(cfg, store, taskDist)
 	runGrpcServer(cfg, store, taskDist)
 	//runGinServer(cfg, store)
@@ -68,8 +69,9 @@ func runDbMigration(migrationUrl string, dbSource string) {
 	log.Info().Msg("Successfully applied migrations")
 }
 
-func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+func runTaskProcessor(cfg utils.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
+	mailer := mail.NewGmailSender(cfg.EmailSenderName, cfg.EmailSenderAddress, cfg.EmailSenderPassword)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 
 	log.
 		Info().
