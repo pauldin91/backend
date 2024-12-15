@@ -1,18 +1,19 @@
 package api
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	mockdb "github.com/pauldin91/backend/db/mock"
 	db "github.com/pauldin91/backend/db/sqlc"
 	"github.com/pauldin91/backend/token"
 	"github.com/pauldin91/backend/utils"
-
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -74,7 +75,7 @@ func TestTransferAPI(t *testing.T) {
 				"currency":        utils.USD,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				//addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user2.Username, user2.Role, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user2.Username, user2.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account1.ID)).Times(1).Return(account1, nil)
@@ -152,7 +153,7 @@ func TestTransferAPI(t *testing.T) {
 				"currency":        utils.USD,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				//addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user3.Username, user3.Role, time.Minute)
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user3.Username, user3.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account3.ID)).Times(1).Return(account3, nil)
@@ -263,29 +264,29 @@ func TestTransferAPI(t *testing.T) {
 	}
 
 	for i := range testCases {
-		_ = testCases[i]
-		/*
-			t.Run(tc.name, func(t *testing.T) {
-				ctrl := gomock.NewController(t)
-				defer ctrl.Finish()
+		tc := testCases[i]
 
-				store := mockdb.NewMockStore(ctrl)
-				tc.buildStubs(store)
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-				server := newTestServer(t, store)
-				recorder := httptest.NewRecorder()
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
 
-				// Marshal body data to JSON
-				data, err := json.Marshal(tc.body)
-				require.NoError(t, err)
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
 
-				url := "/transfers"
-				request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
-				require.NoError(t, err)
+			// Marshal body data to JSON
+			data, err := json.Marshal(tc.body)
+			require.NoError(t, err)
 
-				tc.setupAuth(t, request, server.tokenMaker)
-				server.router.ServeHTTP(recorder, request)
-				tc.checkResponse(recorder)
-			})*/
+			url := "/transfers"
+			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
 	}
 }

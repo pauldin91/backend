@@ -13,6 +13,15 @@ services:
     networks:
       - backend  # Attach to the backend network
 
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"  # Expose PostgreSQL on port 5433 externally
+    networks:
+      - backend  # Attach to the backend network
+
+      
+
   backend:
     build:
       context: .

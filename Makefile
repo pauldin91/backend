@@ -50,8 +50,8 @@ build:
 	go build -o main 
 
 mock:
-	mockgen -package mockdb -destination db/mock/store.go backend/db/sqlc Store
-	#mockgen -package mockwk -destination worker/mock/distributor.go backend/worker TaskDistributor
+	mockgen -package mockdb -destination db/mock/store.go github.com/pauldin91/backend/db/sqlc Store
+	mockgen -package mockwk -destination worker/mock/distributor.go github.com/pauldin91/backend/worker TaskDistributor
 
 proto:
 	rm -f pb/*.go

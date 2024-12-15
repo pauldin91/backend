@@ -2,21 +2,21 @@ package gapi
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/pauldin91/backend/db/sqlc"
 	pb "github.com/pauldin91/backend/pb"
 	"github.com/pauldin91/backend/utils"
-	validator "github.com/pauldin91/backend/validation"
+	validation "github.com/pauldin91/backend/validation"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
-	paylod, err := server.authUser(ctx)
+	authPayload, err := server.authorizeUser(ctx, []string{utils.BankerRole, utils.DepositorRole})
 	if err != nil {
 		return nil, unauthenticatedError(err)
 	}
@@ -26,9 +26,8 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		return nil, invalidArgumentError(violations)
 	}
 
-	if paylod.Username != req.GetUsername() {
-		return nil, status.Errorf(codes.PermissionDenied, " cannot update others")
-
+	if authPayload.Role != utils.BankerRole && authPayload.Username != req.GetUsername() {
+		return nil, status.Errorf(codes.PermissionDenied, "cannot update other user's info")
 	}
 
 	arg := db.UpdateUserParams{
@@ -42,11 +41,11 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 			Valid:  req.Email != nil,
 		},
 	}
-	if req.Password != nil {
 
+	if req.Password != nil {
 		hashedPassword, err := utils.HashPassword(req.GetPassword())
 		if err != nil {
-			return nil, status.Errorf(codes.Unimplemented, "method unimplemented")
+			return nil, status.Errorf(codes.Internal, "failed to hash password: %s", err)
 		}
 
 		arg.HashedPassword = pgtype.Text{
@@ -61,41 +60,38 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 	}
 
 	user, err := server.store.UpdateUser(ctx, arg)
-
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, status.Errorf(codes.NotFound, "user : %s not found", err)
-
+		if errors.Is(err, db.ErrRecordNotFound) {
+			return nil, status.Errorf(codes.NotFound, "user not found")
 		}
-		return nil, status.Errorf(codes.Internal, "failed to update user : %s", err)
+		return nil, status.Errorf(codes.Internal, "failed to update user: %s", err)
 	}
 
 	rsp := &pb.UpdateUserResponse{
 		User: convertUser(user),
 	}
-
 	return rsp, nil
 }
 
 func validateUpdateUserRequest(req *pb.UpdateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
-	if err := validator.ValidateUsername(req.GetUsername()); err != nil {
+	if err := validation.ValidateUsername(req.GetUsername()); err != nil {
 		violations = append(violations, fieldViolation("username", err))
 	}
 
 	if req.Password != nil {
-		if err := validator.ValidatePassword(req.GetPassword()); err != nil {
+		if err := validation.ValidatePassword(req.GetPassword()); err != nil {
 			violations = append(violations, fieldViolation("password", err))
 		}
 	}
 
 	if req.FullName != nil {
-		if err := validator.ValidateFullname(req.GetFullName()); err != nil {
+		if err := validation.ValidateFullname(req.GetFullName()); err != nil {
 			violations = append(violations, fieldViolation("full_name", err))
 		}
 	}
 
 	if req.Email != nil {
-		if err := validator.ValidateEmail(req.GetEmail()); err != nil {
+		if err := validation.ValidateEmail(req.GetEmail()); err != nil {
 			violations = append(violations, fieldViolation("email", err))
 		}
 	}

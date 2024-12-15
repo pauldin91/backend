@@ -11,12 +11,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	mockdb "github.com/pauldin91/backend/db/mock"
 	db "github.com/pauldin91/backend/db/sqlc"
 	"github.com/pauldin91/backend/token"
 	"github.com/pauldin91/backend/utils"
-
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -291,32 +290,32 @@ func TestListAccountsAPI(t *testing.T) {
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(recoder *httptest.ResponseRecorder)
 	}{
-		//{
-		//	name: "OK",
-		//	query: Query{
-		//		pageID:   1,
-		//		pageSize: n,
-		//	},
-		//	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-		//		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, user.Role, time.Minute)
-		//	},
-		//	buildStubs: func(store *mockdb.MockStore) {
-		//		arg := db.ListAccountsParams{
-		//			Owner:  user.Username,
-		//			Limit:  int32(n),
-		//			Offset: 0,
-		//		}
-		//
-		//		store.EXPECT().
-		//			ListAccounts(gomock.Any(), gomock.Eq(arg)).
-		//			Times(1).
-		//			Return(accounts, nil)
-		//	},
-		//	checkResponse: func(recorder *httptest.ResponseRecorder) {
-		//		require.Equal(t, http.StatusOK, recorder.Code)
-		//		requireBodyMatchAccounts(t, recorder.Body, accounts)
-		//	},
-		//},
+		{
+			name: "OK",
+			query: Query{
+				pageID:   1,
+				pageSize: n,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, user.Role, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.ListAccountsParams{
+					Owner:  user.Username,
+					Limit:  int32(n),
+					Offset: 0,
+				}
+
+				store.EXPECT().
+					ListAccounts(gomock.Any(), gomock.Eq(arg)).
+					Times(1).
+					Return(accounts, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchAccounts(t, recorder.Body, accounts)
+			},
+		},
 		{
 			name: "NoAuthorization",
 			query: Query{
@@ -334,25 +333,25 @@ func TestListAccountsAPI(t *testing.T) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
-		//{
-		//	name: "InternalError",
-		//	query: Query{
-		//		pageID:   1,
-		//		pageSize: n,
-		//	},
-		//	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-		//		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, user.Role, time.Minute)
-		//	},
-		//	buildStubs: func(store *mockdb.MockStore) {
-		//		store.EXPECT().
-		//			ListAccounts(gomock.Any(), gomock.Any()).
-		//			Times(1).
-		//			Return([]db.Account{}, sql.ErrConnDone)
-		//	},
-		//	checkResponse: func(recorder *httptest.ResponseRecorder) {
-		//		require.Equal(t, http.StatusInternalServerError, recorder.Code)
-		//	},
-		//},
+		{
+			name: "InternalError",
+			query: Query{
+				pageID:   1,
+				pageSize: n,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, user.Role, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					ListAccounts(gomock.Any(), gomock.Any()).
+					Times(1).
+					Return([]db.Account{}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
 		{
 			name: "InvalidPageID",
 			query: Query{

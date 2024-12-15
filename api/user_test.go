@@ -1,9 +1,6 @@
 package api
 
 import (
-	mockdb "github.com/pauldin91/backend/db/mock"
-	db "github.com/pauldin91/backend/db/sqlc"
-	"github.com/pauldin91/backend/utils"
 	"bytes"
 	"database/sql"
 	"encoding/json"
@@ -15,8 +12,11 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang/mock/gomock"
+	mockdb "github.com/pauldin91/backend/db/mock"
+	db "github.com/pauldin91/backend/db/sqlc"
+	"github.com/pauldin91/backend/utils"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 type eqCreateUserParamsMatcher struct {
@@ -170,29 +170,29 @@ func TestCreateUserAPI(t *testing.T) {
 	}
 
 	for i := range testCases {
-		_ = testCases[i]
-		/*
-			t.Run(tc.name, func(t *testing.T) {
-				ctrl := gomock.NewController(t)
-				defer ctrl.Finish()
+		tc := testCases[i]
 
-				store := mockdb.NewMockStore(ctrl)
-				tc.buildStubs(store)
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-				server := newTestServer(t, store)
-				recorder := httptest.NewRecorder()
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
 
-				// Marshal body data to JSON
-				data, err := json.Marshal(tc.body)
-				require.NoError(t, err)
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
 
-				url := "/users"
-				request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
-				require.NoError(t, err)
+			// Marshal body data to JSON
+			data, err := json.Marshal(tc.body)
+			require.NoError(t, err)
 
-				server.router.ServeHTTP(recorder, request)
-				tc.checkResponse(recorder)
-			})*/
+			url := "/users"
+			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+			require.NoError(t, err)
+
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
 	}
 }
 
@@ -290,29 +290,29 @@ func TestLoginUserAPI(t *testing.T) {
 	}
 
 	for i := range testCases {
-		_ = testCases[i]
-		/*
-			t.Run(tc.name, func(t *testing.T) {
-				ctrl := gomock.NewController(t)
-				defer ctrl.Finish()
+		tc := testCases[i]
 
-				store := mockdb.NewMockStore(ctrl)
-				tc.buildStubs(store)
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-				server := newTestServer(t, store)
-				recorder := httptest.NewRecorder()
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
 
-				// Marshal body data to JSON
-				data, err := json.Marshal(tc.body)
-				require.NoError(t, err)
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
 
-				url := "/users/login"
-				request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
-				require.NoError(t, err)
+			// Marshal body data to JSON
+			data, err := json.Marshal(tc.body)
+			require.NoError(t, err)
 
-				server.router.ServeHTTP(recorder, request)
-				tc.checkResponse(recorder)
-			})*/
+			url := "/users/login"
+			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+			require.NoError(t, err)
+
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
 	}
 }
 
