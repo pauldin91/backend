@@ -13,7 +13,7 @@ var testQueries *Queries
 
 const (
 	dbDriver = "postgres"
-	dbSource = "postgres://backend:backend@localhost:5433/backend?sslmode=disable"
+	dbSource = "postgres://postgres:postgres@localhost:5433/postgres?sslmode=disable"
 )
 
 var testStore Store

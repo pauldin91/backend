@@ -28,13 +28,14 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "incorrect credentials")
 	}
-	accessToken, accessPayload, err := server.tokenMaker.CreateToken(user.Username, server.config.AccessTokenDuration)
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(user.Username, user.Role, server.config.AccessTokenDuration)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "incorrect credentials")
 	}
 
 	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
 		user.Username,
+		user.Role,
 		server.config.RefreshTokenDuration,
 	)
 
@@ -50,7 +51,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		UserAgent:    metadata.UserAgent,
 		ClientIp:     metadata.ClientIP,
 		IsBlocked:    false,
-		ExpiresAt:    refreshPayload.ExpiresAt.Time,
+		ExpiresAt:    refreshPayload.ExpiresAt,
 	})
 
 	if err != nil {
@@ -62,8 +63,8 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		SessionId:             session.ID.String(),
 		AccessToken:           accessToken,
 		RefreshToken:          refreshToken,
-		AccessTokenExpiresAt:  timestamppb.New(accessPayload.ExpiresAt.Time),
-		RefreshTokenExpiresAt: timestamppb.New(refreshPayload.ExpiresAt.Time),
+		AccessTokenExpiresAt:  timestamppb.New(accessPayload.ExpiresAt),
+		RefreshTokenExpiresAt: timestamppb.New(refreshPayload.ExpiresAt),
 	}
 
 	return rsp, nil

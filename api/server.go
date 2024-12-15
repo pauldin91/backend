@@ -1,10 +1,11 @@
 package api
 
 import (
+	"fmt"
+
 	db "github.com/pauldin91/backend/db/sqlc"
 	"github.com/pauldin91/backend/token"
 	"github.com/pauldin91/backend/utils"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -40,9 +41,9 @@ func NewServer(cfg utils.Config, store db.Store) (*Server, error) {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 	router.POST("/users", server.createUser)
-	router.POST("/users/login", server.login)
+	router.POST("/users/login", server.loginUser)
 
-	router.POST("/token/renew_access", server.renewAccess)
+	router.POST("/token/renew_access", server.renewAccessToken)
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
