@@ -54,7 +54,7 @@ func EqCreateUserTxParams(arg db.CreateUserTxParams, password string, user db.Us
 }
 
 func randomUser(t *testing.T, role string) (user db.User, password string) {
-	password = utils.RandomString(6)
+	password = utils.RandomString(8)
 	hashedPassword, err := utils.HashPassword(password)
 	require.NoError(t, err)
 
