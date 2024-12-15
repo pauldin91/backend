@@ -191,7 +191,22 @@ func runGatewayServer(ctx context.Context, waitGroup *errgroup.Group, cfg utils.
 
 	mux.Handle("/swagger/", swaggerHandler)
 
-	c := cors.Default()
+	c := cors.New(cors.Options{
+		AllowedOrigins: cfg.AllowedOrigins,
+
+		AllowedMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+		},
+		AllowedHeaders: []string{
+			"Authorization",
+			"Content-Type",
+		},
+		AllowCredentials: true,
+	})
 	handler := c.Handler(gapi.HttpLogger(mux))
 
 	httpServer := &http.Server{
