@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "exec",
-            "program": "${workspaceFolder}/main"
+            "program": "${workspaceFolder}/bin/main"
         }
     ]
 }

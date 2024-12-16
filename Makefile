@@ -1,22 +1,5 @@
 DB_URL=postgresql://postgres:postgres@localhost:5433/postgres?sslmode=disable
 
-commit: 
-	git add .
-	git commit -m "$(message)"
-	git push -u origin develop
-
-network:
-	docker network create bank-network
-
-postgres:
-	docker run --name postgres --network bank-network -p 5433:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password -d postgres
-
-createdb:
-	docker exec -it src-postgres-1 createdb --username=backend --owner=backend backend
-
-dropdb:
-	docker exec -it src-postgres-1 dropdb --username=backend backend
-
 migrateup:
 	migrate -path db/migrations -database "$(DB_URL)" -verbose up $(times)
 
@@ -31,52 +14,36 @@ migrateversion:
 new_migration:
 	migrate create -ext sql -dir db/migrations -seq $(name)
 
-db_docs:
+docs:
 	dbdocs build doc/db.dbml
 
-db_schema:
+schema:
 	dbml2sql --postgres -o doc/schema.sql doc/db.dbml
-
-gen:
-	sqlc generate
-
-test:
-	go test -v -cover -short ./...
-
-server:
-	go run main.go
-
-build: 
-	go build -o main 
 
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/pauldin91/backend/db/sqlc Store
 	mockgen -package mockwk -destination worker/mock/distributor.go github.com/pauldin91/backend/worker TaskDistributor
+
+gen:
+	sqlc generate
 
 proto:
 	rm -f pb/*.go
 	rm -f doc/swagger/*.swagger.json
 	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
 	--grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
-	--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=simple_bank \
-	proto/*.proto
-	statik -src=./doc/swagger -dest=./doc
-
-fproto:
-	rm -f pb/*.go
-	rm -f doc/swagger/*.swagger.json
-	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
-	--go-grpc_out=pb --go-grpc_opt=paths=source_relative \
-	--grpc-gateway_out=pb --grpc-gateway_opt=paths=source_relative \
 	--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=backend \
 	proto/*.proto
 	statik -src=./doc/swagger -dest=./doc
 
+test:
+	go test -v -cover -short ./...
 
-evans:
-	docker run --name evans -d -p 9090:9090 evans
+build: 
+	mkdir -p bin
+	go build -o bin/main 
 
-redis:
-	docker run --name src-redis-1 -p 6379:6379 -d redis:7-alpine
+clean:
+	rm -rf bin
 
 .PHONY: network postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 new_migration db_docs db_schema sqlc test server mock proto evans redis
